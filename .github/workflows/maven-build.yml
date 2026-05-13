@@ -1,6 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-
-name: Java CI with Maven
+name: Java CI with Maven and Docker
 
 on:
   push:
@@ -14,23 +12,35 @@ on:
       - feature/full-devops-deployment
 
 jobs:
-  build:
+  build-and-push:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        java: [ '17' ]
-
     steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java }}
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      - name: Build project with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build customers-service Docker image
+        run: |
+          docker build -t klebervincent/customers-service:latest ./spring-petclinic-customers-service
+
+      - name: Push customers-service Docker image
+        run: |
+          docker push klebervincent/customers-service:latest
