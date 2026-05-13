@@ -1,4 +1,4 @@
-name: Java CI with Maven and Docker
+name: Spring Petclinic Full CI/CD
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
       - feature/full-devops-deployment
 
 jobs:
+
   build-and-push:
 
     runs-on: ubuntu-latest
@@ -37,10 +38,37 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build customers-service Docker image
+      - name: Build and Push Config Server
+        run: |
+          docker build -t klebervincent/config-server:latest ./spring-petclinic-config-server
+          docker push klebervincent/config-server:latest
+
+      - name: Build and Push Discovery Server
+        run: |
+          docker build -t klebervincent/discovery-server:latest ./spring-petclinic-discovery-server
+          docker push klebervincent/discovery-server:latest
+
+      - name: Build and Push Customers Service
         run: |
           docker build -t klebervincent/customers-service:latest ./spring-petclinic-customers-service
-
-      - name: Push customers-service Docker image
-        run: |
           docker push klebervincent/customers-service:latest
+
+      - name: Build and Push Vets Service
+        run: |
+          docker build -t klebervincent/vets-service:latest ./spring-petclinic-vets-service
+          docker push klebervincent/vets-service:latest
+
+      - name: Build and Push Visits Service
+        run: |
+          docker build -t klebervincent/visits-service:latest ./spring-petclinic-visits-service
+          docker push klebervincent/visits-service:latest
+
+      - name: Build and Push API Gateway
+        run: |
+          docker build -t klebervincent/api-gateway:latest ./spring-petclinic-api-gateway
+          docker push klebervincent/api-gateway:latest
+
+      - name: Build and Push Admin Server
+        run: |
+          docker build -t klebervincent/admin-server:latest ./spring-petclinic-admin-server
+          docker push klebervincent/admin-server:latest
