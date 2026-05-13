@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: genai-service
+  namespace: petclinic
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: genai-service
+
+  template:
+    metadata:
+      labels:
+        app: genai-service
+
+    spec:
+      containers:
+      - name: genai-service
+
+        image: 173235557364.dkr.ecr.eu-west-1.amazonaws.com/spring-petclinic/genai-service:v1.0.0-prod
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8085
+
+        env:
+        - name: CONFIG_SERVER_URL
+          value: http://config-server:8888
+
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: genai-secret
+              key: OPENAI_API_KEY
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8085
+          initialDelaySeconds: 90
+          periodSeconds: 15
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8085
+          initialDelaySeconds: 120
+          periodSeconds: 20

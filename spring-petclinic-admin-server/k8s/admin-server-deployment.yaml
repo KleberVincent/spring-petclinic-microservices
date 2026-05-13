@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: admin-server
+  namespace: petclinic
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: admin-server
+
+  template:
+    metadata:
+      labels:
+        app: admin-server
+
+    spec:
+      containers:
+      - name: admin-server
+
+        image: 173235557364.dkr.ecr.eu-west-1.amazonaws.com/spring-petclinic/admin-server:v1.0.0-prod
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 9090
+
+        env:
+        - name: CONFIG_SERVER_URL
+          value: http://config-server:8888
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9090
+          initialDelaySeconds: 60
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9090
+          initialDelaySeconds: 90
+          periodSeconds: 20

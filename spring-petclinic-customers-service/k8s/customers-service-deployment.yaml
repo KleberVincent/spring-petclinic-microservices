@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: customers-service
+  namespace: petclinic
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: customers-service
+
+  template:
+    metadata:
+      labels:
+        app: customers-service
+
+    spec:
+      containers:
+      - name: customers-service
+
+        image: 173235557364.dkr.ecr.eu-west-1.amazonaws.com/spring-petclinic/customers-service:v1.0.0-prod
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8081
+
+        env:
+        - name: CONFIG_SERVER_URL
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          value: http://discovery-server:8761/eureka/
+          value: http://config-server:8888
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 90
+          periodSeconds: 20
