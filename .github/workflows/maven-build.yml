@@ -1,4 +1,4 @@
-name: Spring Petclinic Full CI/CD
+name: Spring Petclinic AWS ECR CI/CD
 
 on:
   push:
@@ -32,43 +32,48 @@ jobs:
       - name: Build project with Maven
         run: mvn clean package -DskipTests
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push Config Server
         run: |
-          docker build -t klebervincent/config-server:latest ./spring-petclinic-config-server
-          docker push klebervincent/config-server:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/config-server:latest ./spring-petclinic-config-server
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/config-server:latest
 
       - name: Build and Push Discovery Server
         run: |
-          docker build -t klebervincent/discovery-server:latest ./spring-petclinic-discovery-server
-          docker push klebervincent/discovery-server:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/discovery-server:latest ./spring-petclinic-discovery-server
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/discovery-server:latest
 
       - name: Build and Push Customers Service
         run: |
-          docker build -t klebervincent/customers-service:latest ./spring-petclinic-customers-service
-          docker push klebervincent/customers-service:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/customers-service:latest ./spring-petclinic-customers-service
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/customers-service:latest
 
       - name: Build and Push Vets Service
         run: |
-          docker build -t klebervincent/vets-service:latest ./spring-petclinic-vets-service
-          docker push klebervincent/vets-service:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/vets-service:latest ./spring-petclinic-vets-service
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/vets-service:latest
 
       - name: Build and Push Visits Service
         run: |
-          docker build -t klebervincent/visits-service:latest ./spring-petclinic-visits-service
-          docker push klebervincent/visits-service:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/visits-service:latest ./spring-petclinic-visits-service
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/visits-service:latest
 
       - name: Build and Push API Gateway
         run: |
-          docker build -t klebervincent/api-gateway:latest ./spring-petclinic-api-gateway
-          docker push klebervincent/api-gateway:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/api-gateway:latest ./spring-petclinic-api-gateway
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/api-gateway:latest
 
       - name: Build and Push Admin Server
         run: |
-          docker build -t klebervincent/admin-server:latest ./spring-petclinic-admin-server
-          docker push klebervincent/admin-server:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/admin-server:latest ./spring-petclinic-admin-server
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/spring-petclinic/admin-server:latest
